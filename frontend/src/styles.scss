@@ -3,6 +3,12 @@ https://serp.co/tools/css-reset/
 <link rel="stylesheet" href="https://css.serp.co/css-reset/normalize.css/">
 */
 
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
 /* Document
    ========================================================================== */
 

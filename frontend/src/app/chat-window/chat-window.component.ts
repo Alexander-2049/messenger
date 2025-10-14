@@ -53,6 +53,8 @@ export class ChatWindowComponent {
     },
   ];
 
+  constructor() {}
+
   private triggerShake() {
     const now = Date.now();
     if (this.isShaking) {

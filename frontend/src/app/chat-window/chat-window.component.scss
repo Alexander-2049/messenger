@@ -1,11 +1,17 @@
 .outer-wrapper {
   --host-border-radius: 16px;
   width: 100%;
+  height: 100%;
   background-color: #ffffff;
   border: 1px solid #e0e0e0;
   border-radius: var(--host-border-radius);
-  height: 100%;
   box-sizing: border-box;
+}
+
+:host {
+  display: block; /* ensure the host participates in layout */
+  flex: 1 1 auto; /* flex-grow: 1 */
+  min-height: 0; /* allows children with overflow to shrink correctly inside flex container */
 }
 
 .inner-wrapper {
