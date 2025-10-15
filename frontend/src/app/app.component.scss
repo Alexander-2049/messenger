@@ -6,15 +6,6 @@ main {
   grid-template-rows: auto 1fr;
 }
 
-header {
-  display: flex;
-  flex-direction: row;
-  gap: 8px;
-  padding: 8px;
-  background: lightgray;
-  z-index: 1;
-}
-
 .content {
   display: flex;
   flex-direction: column;
