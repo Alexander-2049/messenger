@@ -1,0 +1,17 @@
+<div class="rooms-wrapper">
+  <form [formGroup]="headForm" class="head">
+    <input
+      formControlName="searchCreateInputBar"
+      type="text"
+      placeholder="Search/Create room"
+    />
+    <button
+      [disabled]="headForm.get('searchCreateInputBar')?.hasError('required')"
+    >
+      Create
+    </button>
+  </form>
+  <ul>
+    <li></li>
+  </ul>
+</div>
