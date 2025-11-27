@@ -11,6 +11,7 @@
 ul.urls {
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   gap: 48px;
   margin-block-start: 0;
   margin-block-end: 0;

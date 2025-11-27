@@ -1,0 +1,27 @@
+:host {
+  flex: 1;
+  overflow: auto; /* internal scroll */
+  box-sizing: border-box;
+  padding: 5%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.profile-wrapper {
+  background-color: white;
+  border: 2px solid #000000;
+
+  border-top-left-radius: 100px 5px;
+  border-top-right-radius: 320px 20px;
+  border-bottom-right-radius: 15px 225px;
+  border-bottom-left-radius: 225px 10px;
+
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  max-width: 1024px;
+  padding: 16px;
+  box-sizing: border-box;
+}
