@@ -18,4 +18,7 @@ export class RoomsComponent {
   headForm = new FormGroup({
     searchCreateInputBar: new FormControl('', Validators.required),
   });
+
+  // random float in [-1.5, 1.5)
+  rotateAngle: number = Math.random() * 3 - 1.5;
 }

@@ -1,4 +1,4 @@
-<div class="rooms-wrapper">
+<div class="rooms-wrapper" [style.transform]="'rotate(' + rotateAngle + 'deg)'">
   <form [formGroup]="headForm" class="headForm">
     <input
       formControlName="searchCreateInputBar"
