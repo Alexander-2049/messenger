@@ -22,8 +22,8 @@
       [style.transform]="'rotate(' + randDeg(-0.7, 0.7) + 'deg)'"
     >
       <a [routerLink]="item.path"
-        ><span>{{ item.title }}</span>
-        <span>
+        ><span class="room-title">{{ item.title }}</span>
+        <span class="room-user-count">
           {{ item.users }} / {{ item.maxUsers ? item.maxUsers : "∞" }}
         </span></a
       >
