@@ -6,19 +6,50 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { RouterLink } from '@angular/router';
+import { randomFloat } from '../utils/random';
 
 @Component({
   selector: 'app-rooms',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './rooms.component.html',
   styleUrl: './rooms.component.scss',
 })
 export class RoomsComponent {
+  randDeg = randomFloat;
   headForm = new FormGroup({
     searchCreateInputBar: new FormControl('', Validators.required),
   });
-
-  // random float in [-1.5, 1.5)
-  rotateAngle: number = Math.random() * 3 - 1.5;
+  rooms: {
+    path: string;
+    title: string;
+    users: number;
+    maxUsers: number | null; // null = unlimited OR number > 0
+  }[] = [
+    {
+      path: '/room/abc',
+      title: 'Nicolas',
+      users: 3,
+      maxUsers: 3,
+    },
+    {
+      path: '/room/abc',
+      title: 'Nicolas',
+      users: 3,
+      maxUsers: 3,
+    },
+    {
+      path: '/room/abc',
+      title: 'Nicolas',
+      users: 3,
+      maxUsers: 3,
+    },
+    {
+      path: '/room/abc',
+      title: 'Nicolas',
+      users: 3,
+      maxUsers: 3,
+    },
+  ];
 }

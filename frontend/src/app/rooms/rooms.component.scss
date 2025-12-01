@@ -65,17 +65,18 @@
         border-bottom-right-radius: 400px 40px;
         border-bottom-left-radius: 1500px 80px;
       }
-
     }
 
-    button, input[type="submit"], input[type="reset"] {
-    	background: none;
-    	color: inherit;
-    	border: transparent;
-    	padding: 0;
+    button,
+    input[type="submit"],
+    input[type="reset"] {
+      background: none;
+      color: inherit;
+      border: transparent;
+      padding: 0;
 
-    	cursor: pointer;
-    	outline: inherit;
+      cursor: pointer;
+      outline: inherit;
     }
 
     button {
@@ -84,7 +85,7 @@
       box-sizing: border-box;
       padding: 4px 8px;
       font-size: 28px;
-    	
+
       border-top-left-radius: 190px 15px;
       border-top-right-radius: 15px 285px;
       border-bottom-right-radius: 215px 15px;
@@ -94,6 +95,47 @@
         cursor: not-allowed;
         background-color: #e7e7e769;
         color: #585858;
+      }
+    }
+  }
+
+  ul.rooms-list {
+    display: block;
+    list-style-type: disc;
+    margin-block-start: 1em;
+    margin-block-end: 0;
+    padding-inline-start: 0;
+    unicode-bidi: isolate;
+
+    li {
+      border: 2px solid black;
+      list-style: none;
+
+      margin-top: 6px;
+
+      border-top-left-radius: 190px 15px;
+      border-top-right-radius: 15px 285px;
+      border-bottom-right-radius: 215px 15px;
+      border-bottom-left-radius: 15px 205px;
+
+      a {
+        display: flex;
+        width: 100%;
+        height: 48px;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 32px;
+        box-sizing: border-box;
+
+        font-family: inherit;
+        font-size: 28px;
+
+        color: #000000;
+        text-decoration: none;
+
+        &:hover {
+          color: #000000;
+        }
       }
     }
   }
