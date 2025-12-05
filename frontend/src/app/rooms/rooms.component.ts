@@ -28,25 +28,25 @@ export class RoomsComponent {
     maxUsers: number | null; // null = unlimited OR number > 0
   }[] = [
     {
-      path: '/roomsnp/abc',
+      path: '/rooms/abc',
       title: 'Nicolas',
       users: 3,
       maxUsers: 3,
     },
     {
-      path: '/roomsnp/abc',
+      path: '/rooms/abc',
       title: 'Nicolas',
       users: 3,
       maxUsers: 3,
     },
     {
-      path: '/roomsnp/abc',
+      path: '/rooms/abc',
       title: 'Nicolas',
       users: 3,
       maxUsers: 3,
     },
     {
-      path: '/roomsnp/abc',
+      path: '/rooms/abc',
       title: 'Nicolas',
       users: 3,
       maxUsers: 3,
