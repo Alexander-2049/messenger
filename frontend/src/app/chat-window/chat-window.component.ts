@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -15,6 +15,8 @@ import {
   styleUrl: './chat-window.component.scss',
 })
 export class ChatWindowComponent {
+  @ViewChild('messagesContainer') messagesContainer!: ElementRef;
+
   messageForm = new FormGroup({
     message: new FormControl('', Validators.required),
   });
@@ -88,6 +90,19 @@ export class ChatWindowComponent {
       type: 'self',
     });
     message.setValue('');
+
+    setTimeout(() => {
+      this.scrollToBottom();
+    });
     return false;
+  }
+
+  private scrollToBottom() {
+    if (!this.messagesContainer) return;
+
+    try {
+      const el = this.messagesContainer.nativeElement;
+      el.scrollTop = el.scrollHeight;
+    } catch {}
   }
 }

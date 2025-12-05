@@ -1,6 +1,6 @@
 <div class="outer-wrapper">
   <div class="inner-wrapper">
-    <div class="messages">
+    <div class="messages" #messagesContainer>
       <div *ngFor="let msg of messages">
         <div class="message" [ngClass]="msg.type">
           <div class="avatar-wrapper">
@@ -35,7 +35,9 @@
           type="text"
           placeholder="Type your message..."
         />
-        <button (click)="submitMessage()">Send</button>
+        <div class="submit-message-button-area">
+          <button (click)="submitMessage()">Send</button>
+        </div>
       </form>
     </div>
   </div>

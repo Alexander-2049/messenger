@@ -6,6 +6,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  font-family: inherit;
 }
 
 .rooms-wrapper {
@@ -119,6 +120,10 @@
       border-bottom-right-radius: 215px 15px;
       border-bottom-left-radius: 15px 205px;
 
+      &:hover {
+        scale: 1.01;
+      }
+
       a {
         display: flex;
         width: 100%;
@@ -139,6 +144,7 @@
           overflow: hidden;
           white-space: nowrap;
           text-overflow: ellipsis;
+          font-family: inherit;
         }
 
         .room-user-count {
@@ -147,6 +153,7 @@
 
         &:hover {
           color: #000000;
+          transform: scale(1.02);
         }
       }
     }
