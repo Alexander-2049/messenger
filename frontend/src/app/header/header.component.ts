@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { StorageService } from '../storage.service';
 
 @Component({
   selector: 'app-header',
@@ -10,6 +11,10 @@ import { RouterLink } from '@angular/router';
   styleUrl: './header.component.scss',
 })
 export class HeaderComponent {
+  constructor(private storage: StorageService) {}
+
+  isProfileReady = !!this.storage.get('username');
+
   links: {
     title: string;
     path: string;

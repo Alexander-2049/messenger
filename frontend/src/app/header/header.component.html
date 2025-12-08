@@ -1,4 +1,4 @@
-<ul class="urls indie-flower-regular">
+<ul class="urls indie-flower-regular" *ngIf="isProfileReady">
   <li *ngFor="let item of links">
     <a [routerLink]="item.path"><img [src]="item.icon" />{{ item.title }}</a>
   </li>

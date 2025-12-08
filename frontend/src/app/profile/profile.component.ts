@@ -31,6 +31,7 @@ export class ProfileComponent {
     if (username === null || username.value === null) return;
 
     this.storage.set('username', username.value);
+    window.location.href = '/';
     // if (message.hasError('required') || message.value.trim() === '') {
     //   this.triggerShake();
     //   return;
