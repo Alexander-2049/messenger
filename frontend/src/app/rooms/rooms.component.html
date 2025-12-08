@@ -1,5 +1,5 @@
 <div
-  class="rooms-wrapper"
+  class="rooms-wrapper indie-flower-regular"
   [style.transform]="'rotate(' + wrapperDegAngle + 'deg)'"
 >
   <form [formGroup]="headForm" class="headForm">
@@ -17,7 +17,10 @@
     </button>
   </form>
   <ul class="rooms-list">
-    <li *ngFor="let item of rooms">
+    <li
+      *ngFor="let item of rooms; let i = index"
+      [style.transform]="'rotate(' + (i % 2 === 0 ? -0.25 : 0.25) + 'deg)'"
+    >
       <a [routerLink]="item.path"
         ><span class="room-title">{{ item.title }}</span>
         <span class="room-user-count">
