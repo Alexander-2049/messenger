@@ -1,7 +1,4 @@
-<div
-  class="rooms-wrapper"
-  [style.transform]="'rotate(' + randDeg(-1.5, 1.5) + 'deg)'"
->
+<div class="rooms-wrapper" [style.transform]="'rotate(' + headDeg + 'deg)'">
   <form [formGroup]="headForm" class="headForm">
     <input
       formControlName="searchCreateInputBar"
@@ -17,10 +14,7 @@
     </button>
   </form>
   <ul class="rooms-list">
-    <li
-      *ngFor="let item of rooms"
-      [style.transform]="'rotate(' + randDeg(-0.7, 0.7) + 'deg)'"
-    >
+    <li *ngFor="let item of rooms">
       <a [routerLink]="item.path"
         ><span class="room-title">{{ item.title }}</span>
         <span class="room-user-count">
