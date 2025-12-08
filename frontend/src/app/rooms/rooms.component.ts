@@ -17,7 +17,7 @@ import { randomFloat } from '../utils/random';
   styleUrl: './rooms.component.scss',
 })
 export class RoomsComponent {
-  headDeg = randomFloat(-1.5, 1.5);
+  wrapperDegAngle = randomFloat(-1.5, 1.5);
   headForm = new FormGroup({
     searchCreateInputBar: new FormControl('', Validators.required),
   });

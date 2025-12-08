@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { randomFloat, randomFloatNeg1_5To1_5 } from '../utils/random';
+import { randomFloatNeg1_5To1_5 } from '../utils/random';
 
 @Component({
   selector: 'app-profile',
@@ -9,5 +9,5 @@ import { randomFloat, randomFloatNeg1_5To1_5 } from '../utils/random';
   styleUrl: './profile.component.scss',
 })
 export class ProfileComponent {
-  randDeg = randomFloatNeg1_5To1_5;
+  wrapperDegAngle = randomFloatNeg1_5To1_5();
 }
