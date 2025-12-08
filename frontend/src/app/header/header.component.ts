@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, type OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { StorageService } from '../storage.service';
 
@@ -10,10 +10,11 @@ import { StorageService } from '../storage.service';
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss',
 })
-export class HeaderComponent {
+export class HeaderComponent implements OnInit {
   constructor(private storage: StorageService) {}
 
-  isProfileReady = !!this.storage.get('username');
+  isProfileReady = false;
+  imagesLoaded: { [key: string]: boolean } = {};
 
   links: {
     title: string;
@@ -31,4 +32,16 @@ export class HeaderComponent {
       icon: 'assets/user.png',
     },
   ];
+
+  ngOnInit() {
+    this.isProfileReady = !!this.storage.get('username');
+
+    this.links.forEach((link) => {
+      this.imagesLoaded[link.icon] = false;
+    });
+  }
+
+  onImageLoad(icon: string) {
+    this.imagesLoaded[icon] = true;
+  }
 }

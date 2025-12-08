@@ -1,5 +1,28 @@
-<ul class="urls indie-flower-regular" *ngIf="isProfileReady">
-  <li *ngFor="let item of links">
-    <a [routerLink]="item.path"><img [src]="item.icon" />{{ item.title }}</a>
-  </li>
-</ul>
+<div class="header-container" [class.ready]="isProfileReady">
+  <!-- Show placeholder while not ready, then fade in actual content -->
+  <ul class="urls indie-flower-regular" *ngIf="isProfileReady">
+    <li
+      *ngFor="let item of links"
+      [class.image-loaded]="imagesLoaded[item.icon]"
+    >
+      <a [routerLink]="item.path">
+        <img
+          [src]="item.icon"
+          [alt]="item.title"
+          (load)="onImageLoad(item.icon)"
+          class="link-icon"
+        />
+        <span class="link-text">{{ item.title }}</span>
+      </a>
+    </li>
+  </ul>
+  <!-- Show skeleton while loading -->
+  <ul class="urls skeleton" *ngIf="!isProfileReady">
+    <li *ngFor="let item of links">
+      <a>
+        <div class="skeleton-icon"></div>
+        <span class="skeleton-text"></span>
+      </a>
+    </li>
+  </ul>
+</div>
