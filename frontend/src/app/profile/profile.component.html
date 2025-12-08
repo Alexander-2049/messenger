@@ -2,5 +2,10 @@
   class="profile-wrapper"
   [style.transform]="'rotate(' + wrapperDegAngle + 'deg)'"
 >
-  <div></div>
+  <form [formGroup]="profileSettingsForm" class="chat-input-inner">
+    <input formControlName="username" type="text" placeholder="Username" />
+    <div class="submit-message-button-area">
+      <button (click)="saveProfileSettings()">Save</button>
+    </div>
+  </form>
 </div>
