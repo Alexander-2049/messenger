@@ -1,44 +1,75 @@
-<div class="outer-wrapper">
-  <div class="inner-wrapper">
-    <div class="messages" #messagesContainer>
-      <div *ngFor="let msg of messages">
-        <div class="message" [ngClass]="msg.type">
-          <div class="avatar-wrapper">
-            <div class="avatar" *ngIf="!msg.avatarUrl">
-              {{ msg.name[0] }}
+<div class="chat-wrapper">
+  <div
+    class="outer-wrapper"
+    [style.transform]="'rotate(' + wrapperDegAngle + 'deg)'"
+  >
+    <div class="chat-header">
+      <h2 class="room-title indie-flower-regular">{{ roomTitle }}</h2>
+      <div class="user-count">{{ activeUsers }} online</div>
+    </div>
+
+    <div class="inner-wrapper">
+      <div class="messages" #messagesContainer>
+        <div
+          *ngFor="let msg of messages; let i = index"
+          class="message-wrapper"
+        >
+          <div class="message" [ngClass]="msg.type">
+            <!-- Show avatar only if it's the first message or sender changed -->
+            <div class="avatar-wrapper" *ngIf="shouldShowAvatar(i)">
+              <div class="avatar" *ngIf="!msg.avatarUrl">
+                {{ msg.name[0] }}
+              </div>
+              <img
+                *ngIf="msg.avatarUrl"
+                [src]="msg.avatarUrl"
+                alt="{{ msg.name }}"
+                class="avatar-img"
+              />
             </div>
-            <img
-              *ngIf="msg.avatarUrl"
-              [src]="msg.avatarUrl"
-              alt="{{ msg.name }}"
-              class="avatar-img"
-            />
-          </div>
-          <div class="bubble-container">
-            <div class="name" [style.color]="msg.nameColor || defaultNameColor">
-              {{ msg.name }}
+            <!-- Add spacing when avatar is hidden for consecutive messages -->
+            <div class="avatar-spacer" *ngIf="!shouldShowAvatar(i)"></div>
+            <div class="bubble-container">
+              <!-- Show name only if avatar is shown -->
+              <div
+                class="name indie-flower-regular"
+                [style.color]="msg.nameColor || defaultNameColor"
+                *ngIf="shouldShowAvatar(i)"
+              >
+                {{ msg.name }}
+              </div>
+              <div class="bubble indie-flower-regular">{{ msg.text }}</div>
+              <!-- Add timestamp display -->
+              <div class="timestamp">{{ formatTimestamp(msg.timestamp) }}</div>
             </div>
-            <div class="bubble">{{ msg.text }}</div>
           </div>
         </div>
       </div>
-    </div>
 
-    <div class="chat-input-outer">
-      <form
-        [formGroup]="messageForm"
-        class="chat-input-inner"
-        [class.shake]="isShaking"
-      >
-        <input
-          formControlName="message"
-          type="text"
-          placeholder="Type your message..."
-        />
-        <div class="submit-message-button-area">
-          <button (click)="submitMessage()">Send</button>
-        </div>
-      </form>
+      <div class="chat-input-outer">
+        <form
+          [formGroup]="messageForm"
+          class="chat-input-inner"
+          [class.shake]="isShaking"
+        >
+          <input
+            formControlName="message"
+            type="text"
+            placeholder="Type your message..."
+            class="indie-flower-regular"
+            (keydown.enter)="submitMessage()"
+          />
+          <div class="submit-message-button-area">
+            <button
+              type="button"
+              (click)="submitMessage()"
+              class="indie-flower-regular"
+            >
+              Send
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 </div>
