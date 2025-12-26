@@ -5,6 +5,7 @@ import {
   ViewChild,
   type OnInit,
   type AfterViewChecked,
+  type OnDestroy,
 } from '@angular/core';
 import {
   FormControl,
@@ -12,7 +13,12 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { randomFloat } from '../utils/random';
+import type { Message } from '../models/api.models';
+import type { Subscription } from 'rxjs';
+import { WebSocketService } from '../services/websocket.service';
+import { UserService } from '../services/user.service';
 
 @Component({
   selector: 'app-chat-window',
@@ -21,7 +27,9 @@ import { randomFloat } from '../utils/random';
   templateUrl: './chat-window.component.html',
   styleUrl: './chat-window.component.scss',
 })
-export class ChatWindowComponent implements OnInit, AfterViewChecked {
+export class ChatWindowComponent
+  implements OnInit, AfterViewChecked, OnDestroy
+{
   @ViewChild('messagesContainer') messagesContainer!: ElementRef;
 
   wrapperDegAngle = randomFloat(-1.5, 1.5);
@@ -34,82 +42,94 @@ export class ChatWindowComponent implements OnInit, AfterViewChecked {
     'https://t4.ftcdn.net/jpg/00/65/77/27/360_F_65772719_A1UV5kLi5nCEWI0BNLLiFaBPEkUbv5Fv.jpg';
 
   isShaking = false;
-  roomTitle = 'General Chat';
-  activeUsers = 12;
+  roomTitle = 'Chat Room';
+  activeUsers = 0;
+  roomId: number | null = null;
 
-  messages = [
-    {
-      type: 'other',
-      name: 'Alice Johnson',
-      avatarUrl: '',
-      text: 'Hey everyone! Welcome to the chat! 👋',
-      nameColor: '#2563eb',
-      timestamp: new Date(Date.now() - 25 * 60000).toISOString(),
-    },
-    {
-      type: 'self',
-      name: 'You',
-      avatarUrl: this.defaultAvatar,
-      text: 'Thanks! Excited to be here.',
-      timestamp: new Date(Date.now() - 24 * 60000).toISOString(),
-    },
-    {
-      type: 'other',
-      name: 'Bob Smith',
-      avatarUrl: '',
-      text: 'How is everyone doing today?',
-      nameColor: '#dc2626',
-      timestamp: new Date(Date.now() - 20 * 60000).toISOString(),
-    },
-    {
-      type: 'other',
-      name: 'Carol Davis',
-      avatarUrl: '',
-      text: 'Pretty good! Working on an interesting project.',
-      nameColor: '#059669',
-      timestamp: new Date(Date.now() - 18 * 60000).toISOString(),
-    },
-    {
-      type: 'self',
-      name: 'You',
-      avatarUrl: this.defaultAvatar,
-      text: 'Oh cool, what kind of project?',
-      timestamp: new Date(Date.now() - 15 * 60000).toISOString(),
-    },
-    {
-      type: 'other',
-      name: 'Carol Davis',
-      avatarUrl: '',
-      text: 'Building a chat application with Angular! It is really fun.',
-      nameColor: '#059669',
-      timestamp: new Date(Date.now() - 10 * 60000).toISOString(),
-    },
-    {
-      type: 'self',
-      name: 'You',
-      avatarUrl: this.defaultAvatar,
-      text: 'That sounds amazing! I would love to know more.',
-      timestamp: new Date(Date.now() - 5 * 60000).toISOString(),
-    },
-  ];
+  messages: Message[] = [];
+  private subscriptions: Subscription[] = [];
+  private shouldScrollToBottom = false;
 
-  constructor() {}
+  constructor(
+    private route: ActivatedRoute,
+    private wsService: WebSocketService,
+    private userService: UserService
+  ) {}
 
   ngOnInit() {
+    this.route.params.subscribe((params) => {
+      const id = params['id'];
+      if (id) {
+        this.roomId = Number.parseInt(id, 10);
+        this.joinRoom();
+      }
+    });
+
+    const historySub = this.wsService
+      .getMessagesOfType<any>('history')
+      .subscribe((msg) => {
+        if (msg.roomId === this.roomId) {
+          this.messages = msg.messages;
+          this.shouldScrollToBottom = true;
+        }
+      });
+    this.subscriptions.push(historySub);
+
+    const messageSub = this.wsService
+      .getMessagesOfType<any>('message')
+      .subscribe((msg) => {
+        if (msg.message.roomId === this.roomId) {
+          this.messages.push(msg.message);
+          this.shouldScrollToBottom = true;
+        }
+      });
+    this.subscriptions.push(messageSub);
+
+    const roomUpdateSub = this.wsService
+      .getMessagesOfType<any>('roomUpdate')
+      .subscribe((msg) => {
+        if (msg.room.id === this.roomId) {
+          this.roomTitle = msg.room.name;
+          this.activeUsers = msg.room.currentParticipants;
+        }
+      });
+    this.subscriptions.push(roomUpdateSub);
+
     setTimeout(() => {
       this.scrollToBottom();
     });
   }
 
   ngAfterViewChecked() {
-    this.scrollToBottom();
+    if (this.shouldScrollToBottom) {
+      this.scrollToBottom();
+      this.shouldScrollToBottom = false;
+    }
+  }
+
+  ngOnDestroy() {
+    if (this.roomId) {
+      this.wsService.leaveRoom(this.roomId);
+    }
+    this.subscriptions.forEach((sub) => sub.unsubscribe());
+  }
+
+  private joinRoom() {
+    if (this.roomId) {
+      this.wsService.joinRoom(this.roomId);
+    }
   }
 
   shouldShowAvatar(index: number): boolean {
     if (index === 0) return true;
     const currentMsg = this.messages[index];
     const previousMsg = this.messages[index - 1];
-    return currentMsg.name !== previousMsg.name;
+    return currentMsg.userId !== previousMsg.userId;
+  }
+
+  isOwnMessage(message: Message): boolean {
+    const currentUserId = this.userService.getUserId();
+    return message.userId === currentUserId;
   }
 
   formatTimestamp(isoString: string): string {
@@ -166,37 +186,10 @@ export class ChatWindowComponent implements OnInit, AfterViewChecked {
       return;
     }
 
-    this.messages.push({
-      avatarUrl: this.defaultAvatar,
-      name: 'You',
-      text: message.value,
-      type: 'self',
-      nameColor: '#000000',
-      timestamp: new Date().toISOString(),
-    });
-    message.setValue('');
-
-    setTimeout(() => {
-      const responses = [
-        "That's interesting!",
-        'I totally agree with you.',
-        'Great point!',
-        'Sounds good to me.',
-        'Love that idea!',
-        'Tell me more about that.',
-      ];
-      const randomResponse =
-        responses[Math.floor(Math.random() * responses.length)];
-
-      this.messages.push({
-        avatarUrl: '',
-        name: 'Alice Johnson',
-        text: randomResponse,
-        type: 'other',
-        nameColor: '#2563eb',
-        timestamp: new Date().toISOString(),
-      });
-    }, 500 + Math.random() * 1000);
+    if (this.roomId) {
+      this.wsService.sendMessage(this.roomId, message.value);
+      message.setValue('');
+    }
 
     setTimeout(() => {
       this.scrollToBottom();

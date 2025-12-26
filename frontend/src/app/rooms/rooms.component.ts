@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, type OnInit, type OnDestroy } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -8,6 +8,11 @@ import {
 } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { randomFloat } from '../utils/random';
+import { RoomService } from '../services/room.service';
+import { WebSocketService } from '../services/websocket.service';
+import { UserService } from '../services/user.service';
+import type { Room } from '../models/api.models';
+import type { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-rooms',
@@ -16,101 +21,131 @@ import { randomFloat } from '../utils/random';
   templateUrl: './rooms.component.html',
   styleUrl: './rooms.component.scss',
 })
-export class RoomsComponent {
+export class RoomsComponent implements OnInit, OnDestroy {
   wrapperDegAngle = randomFloat(-1.5, 1.5);
   headForm = new FormGroup({
     searchCreateInputBar: new FormControl('', Validators.required),
   });
 
-  rooms: {
-    path: string;
-    title: string;
-    users: number;
-    maxUsers: number | null;
-  }[] = [
-    {
-      path: '/rooms/general',
-      title: 'General Chat',
-      users: 12,
-      maxUsers: null,
-    },
-    {
-      path: '/rooms/gaming',
-      title: 'Gaming Squad',
-      users: 5,
-      maxUsers: 8,
-    },
-    {
-      path: '/rooms/study',
-      title: 'Study Group',
-      users: 3,
-      maxUsers: 4,
-    },
-    {
-      path: '/rooms/music',
-      title: 'Music Lovers',
-      users: 8,
-      maxUsers: 10,
-    },
-    {
-      path: '/rooms/coding',
-      title: 'Web Dev Nerds',
-      users: 2,
-      maxUsers: 6,
-    },
-    {
-      path: '/rooms/coffee',
-      title: 'Coffee Break',
-      users: 7,
-      maxUsers: null,
-    },
-    {
-      path: '/rooms/films',
-      title: 'Movie Night',
-      users: 4,
-      maxUsers: 5,
-    },
-    {
-      path: '/rooms/art',
-      title: 'Creative Corner',
-      users: 6,
-      maxUsers: 12,
-    },
-    {
-      path: '/rooms/sports',
-      title: 'Sports Talk',
-      users: 9,
-      maxUsers: 15,
-    },
-    {
-      path: '/rooms/travel',
-      title: 'Wanderlust Chronicles',
-      users: 11,
-      maxUsers: null,
-    },
-    {
-      path: '/rooms/cooking',
-      title: 'Culinary Creations',
-      users: 5,
-      maxUsers: 8,
-    },
-    {
-      path: '/rooms/tech',
-      title: 'Tech Trends',
-      users: 14,
-      maxUsers: 20,
-    },
-    {
-      path: '/rooms/books',
-      title: 'Book Club',
-      users: 3,
-      maxUsers: 6,
-    },
-    {
-      path: '/rooms/fitness',
-      title: 'Fitness Fanatics',
-      users: 8,
-      maxUsers: 12,
-    },
-  ];
+  rooms: Room[] = [];
+  filteredRooms: Room[] = [];
+  isLoading = true;
+  errorMessage = '';
+  private subscriptions: Subscription[] = [];
+
+  constructor(
+    private roomService: RoomService,
+    private wsService: WebSocketService,
+    private userService: UserService
+  ) {}
+
+  ngOnInit() {
+    this.loadRooms();
+
+    this.wsService.connect();
+
+    const userId = this.userService.getUserId();
+    if (userId) {
+      this.wsService.sendInit(userId);
+    }
+
+    const roomUpdateSub = this.wsService
+      .getMessagesOfType<any>('roomsListUpdate')
+      .subscribe((msg) => {
+        this.rooms = msg.rooms;
+        this.filterRooms();
+      });
+    this.subscriptions.push(roomUpdateSub);
+
+    const roomDeletedSub = this.wsService
+      .getMessagesOfType<any>('roomDeleted')
+      .subscribe((msg) => {
+        this.rooms = this.rooms.filter((r) => r.id !== msg.roomId);
+        this.filterRooms();
+      });
+    this.subscriptions.push(roomDeletedSub);
+
+    const searchSub = this.headForm
+      .get('searchCreateInputBar')
+      ?.valueChanges.subscribe(() => {
+        this.filterRooms();
+      });
+    if (searchSub) {
+      this.subscriptions.push(searchSub);
+    }
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.forEach((sub) => sub.unsubscribe());
+  }
+
+  private loadRooms() {
+    this.isLoading = true;
+    this.roomService.getRooms().subscribe({
+      next: (rooms) => {
+        this.rooms = rooms;
+        this.filteredRooms = rooms;
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('[v0] Error loading rooms:', error);
+        this.errorMessage = 'Failed to load rooms';
+        this.isLoading = false;
+      },
+    });
+  }
+
+  private filterRooms() {
+    const searchTerm =
+      this.headForm.get('searchCreateInputBar')?.value?.toLowerCase() || '';
+    if (searchTerm) {
+      this.filteredRooms = this.rooms.filter((room) =>
+        room.name.toLowerCase().includes(searchTerm)
+      );
+    } else {
+      this.filteredRooms = this.rooms;
+    }
+  }
+
+  createRoom() {
+    console.log('createRoom triggered');
+    const roomName = this.headForm.get('searchCreateInputBar')?.value;
+    if (!roomName || roomName.trim() === '') {
+      return;
+    }
+    console.log('createRoom roomName: ' + roomName);
+
+    const userId = this.userService.getUserId();
+    if (!userId) {
+      this.errorMessage = 'User not found';
+      return;
+    }
+
+    console.log('createRoom userId: ' + userId);
+    this.roomService
+      .createRoom({
+        name: roomName,
+        isPrivate: false,
+        maxParticipants: 10,
+        creatorUserId: userId,
+      })
+      .subscribe({
+        next: (room) => {
+          this.rooms.push(room);
+          this.filterRooms();
+          this.headForm.get('searchCreateInputBar')?.setValue('');
+        },
+        error: (error) => {
+          console.error('[v0] Error creating room:', error);
+          this.errorMessage = 'Failed to create room';
+        },
+      });
+  }
+
+  getRoomParticipants(room: Room): string {
+    if (room.maxParticipants) {
+      return `${room.currentParticipants}/${room.maxParticipants}`;
+    }
+    return `${room.currentParticipants}`;
+  }
 }

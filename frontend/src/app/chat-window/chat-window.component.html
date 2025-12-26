@@ -14,18 +14,19 @@
           *ngFor="let msg of messages; let i = index"
           class="message-wrapper"
         >
-          <div class="message" [ngClass]="msg.type">
+          <!-- [ngClass]="msg.type" -->
+          <div class="message">
             <!-- Show avatar only if it's the first message or sender changed -->
             <div class="avatar-wrapper" *ngIf="shouldShowAvatar(i)">
-              <div class="avatar" *ngIf="!msg.avatarUrl">
-                {{ msg.name[0] }}
-              </div>
-              <img
+              <!-- <div class="avatar" *ngIf="!msg.avatarUrl">
+                {{ (msg.nickname || "?")[0] }}
+              </div> -->
+              <!-- <img
                 *ngIf="msg.avatarUrl"
                 [src]="msg.avatarUrl"
-                alt="{{ msg.name }}"
+                alt="{{ msg.nickname }}"
                 class="avatar-img"
-              />
+              /> -->
             </div>
             <!-- Add spacing when avatar is hidden for consecutive messages -->
             <div class="avatar-spacer" *ngIf="!shouldShowAvatar(i)"></div>
@@ -33,14 +34,14 @@
               <!-- Show name only if avatar is shown -->
               <div
                 class="name indie-flower-regular"
-                [style.color]="msg.nameColor || defaultNameColor"
+                [style.color]="msg.color || defaultNameColor"
                 *ngIf="shouldShowAvatar(i)"
               >
-                {{ msg.name }}
+                {{ msg.nickname }}
               </div>
-              <div class="bubble indie-flower-regular">{{ msg.text }}</div>
+              <div class="bubble indie-flower-regular">{{ msg.content }}</div>
               <!-- Add timestamp display -->
-              <div class="timestamp">{{ formatTimestamp(msg.timestamp) }}</div>
+              <div class="timestamp">{{ formatTimestamp(msg.sentAt) }}</div>
             </div>
           </div>
         </div>

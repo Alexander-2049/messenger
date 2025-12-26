@@ -8,10 +8,9 @@ describe('ChatWindowComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ChatWindowComponent]
-    })
-    .compileComponents();
-    
+      imports: [ChatWindowComponent],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(ChatWindowComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

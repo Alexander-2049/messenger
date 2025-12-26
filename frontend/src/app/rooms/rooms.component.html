@@ -2,7 +2,7 @@
   class="rooms-wrapper indie-flower-regular"
   [style.transform]="'rotate(' + wrapperDegAngle + 'deg)'"
 >
-  <form [formGroup]="headForm" class="headForm">
+  <form [formGroup]="headForm" class="headForm" (ngSubmit)="createRoom()">
     <input
       formControlName="searchCreateInputBar"
       type="text"
@@ -21,10 +21,10 @@
       *ngFor="let item of rooms; let i = index"
       [style.transform]="'rotate(' + (i % 2 === 0 ? -0.25 : 0.25) + 'deg)'"
     >
-      <a [routerLink]="item.path"
-        ><span class="room-title">{{ item.title }}</span>
+      <a [routerLink]="'/rooms/' + item.id"
+        ><span class="room-title">{{ item.name }}</span>
         <span class="room-user-count">
-          {{ item.users }} / {{ item.maxUsers ? item.maxUsers : "∞" }}
+          {{ item.currentParticipants }} / {{ item.maxParticipants }}
         </span></a
       >
     </li>

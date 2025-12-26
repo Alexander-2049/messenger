@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, type OnInit } from '@angular/core';
 import { randomFloatNeg1_5To1_5 } from '../utils/random';
 import {
   FormControl,
@@ -7,6 +7,10 @@ import {
   Validators,
 } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { ProfileService } from '../services/profile.service';
+import { UserService } from '../services/user.service';
+import { WebSocketService } from '../services/websocket.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-profile',
@@ -22,6 +26,17 @@ export class ProfileComponent implements OnInit {
 
   wrapperDegAngle = randomFloatNeg1_5To1_5();
   avatarImage: string | null = null;
+  selectedFile: File | null = null;
+  userColor: string = '#' + Math.floor(Math.random() * 16777215).toString(16);
+  isLoading = false;
+  errorMessage = '';
+
+  constructor(
+    private profileService: ProfileService,
+    private userService: UserService,
+    private wsService: WebSocketService,
+    private router: Router
+  ) {}
 
   ngOnInit() {
     // Load saved username
@@ -35,6 +50,11 @@ export class ProfileComponent implements OnInit {
     if (savedAvatar) {
       this.avatarImage = savedAvatar;
     }
+
+    const savedColor = localStorage.getItem('userColor');
+    if (savedColor) {
+      this.userColor = savedColor;
+    }
   }
 
   onAvatarSelected(event: Event): void {
@@ -42,6 +62,8 @@ export class ProfileComponent implements OnInit {
     const file = input.files?.[0];
 
     if (file) {
+      this.selectedFile = file;
+
       const reader = new FileReader();
       reader.onload = (e: ProgressEvent<FileReader>) => {
         const result = e.target?.result as string;
@@ -53,25 +75,83 @@ export class ProfileComponent implements OnInit {
 
   removeAvatar(): void {
     this.avatarImage = null;
+    this.selectedFile = null;
     localStorage.removeItem('userAvatar');
   }
 
-  saveProfileSettings(): void {
+  async saveProfileSettings(): Promise<void> {
     const username = this.profileSettingsForm.get('username');
 
     if (!username?.value || username.value.trim() === '') {
+      this.errorMessage = 'Username is required';
       return;
     }
 
-    // Save username
-    localStorage.setItem('username', username.value);
+    this.isLoading = true;
+    this.errorMessage = '';
 
-    // Save avatar if exists
-    if (this.avatarImage) {
-      localStorage.setItem('userAvatar', this.avatarImage);
+    try {
+      let userId = this.userService.getUserId();
+
+      // If no userId, connect to WebSocket to get one
+      if (!userId) {
+        this.wsService.connect();
+
+        // Wait for welcome message with userId
+        await new Promise<void>((resolve) => {
+          const sub = this.wsService
+            .getMessagesOfType<any>('welcome')
+            .subscribe((msg) => {
+              userId = msg.userId;
+              localStorage.setItem('userId', userId || '');
+              sub.unsubscribe();
+              resolve();
+            });
+        });
+      }
+
+      let avatarPath = this.avatarImage || '';
+
+      // Upload avatar if new file selected
+      if (this.selectedFile && userId) {
+        const uploadResponse = await this.profileService
+          .uploadAvatar(userId, this.selectedFile)
+          .toPromise();
+        if (uploadResponse?.avatarUrl) {
+          avatarPath = uploadResponse.avatarUrl;
+        }
+      }
+
+      // Save profile
+      if (userId) {
+        await this.profileService
+          .saveProfile({
+            userId,
+            nickname: username.value,
+            color: this.userColor,
+            avatarPath,
+          })
+          .toPromise();
+
+        // Update local user service
+        this.userService.setUser({
+          userId,
+          nickname: username.value,
+          color: this.userColor,
+          avatarUrl: avatarPath,
+        });
+
+        // Send profile via WebSocket
+        this.wsService.sendProfile(username.value, this.userColor, avatarPath);
+
+        // Navigate to rooms
+        this.router.navigate(['/rooms']);
+      }
+    } catch (error) {
+      console.error('[v0] Error saving profile:', error);
+      this.errorMessage = 'Failed to save profile. Please try again.';
+    } finally {
+      this.isLoading = false;
     }
-
-    // Navigate or show success message
-    window.location.href = '/';
   }
 }
